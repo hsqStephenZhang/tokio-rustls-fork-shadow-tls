@@ -14,7 +14,8 @@ exclude = ["/.github", "/examples", "/scripts"]
 
 [dependencies]
 tokio = "1.0"
-rustls = { version = "0.22", default-features = false }
+# use github and commit id without path
+rustls = { git = "https://github.com/hsqStephenZhang/rustls-fork-shadow-tls", rev = "5584724101d7aeccdb93232859c07c22d9d37213", default-features = false }
 pki-types = { package = "rustls-pki-types", version = "1" }
 
 [features]

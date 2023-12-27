@@ -110,20 +110,26 @@ impl TlsConnector {
     where
         IO: AsyncRead + AsyncWrite + Unpin,
     {
-        self.connect_with(domain, stream, |_| ())
+        self.connect_with::<_, _, fn(&[u8]) -> [u8; 32]>(domain, stream, None, |_| ())
     }
 
-    pub fn connect_with<IO, F>(
+    pub fn connect_with<IO, F, T>(
         &self,
         domain: pki_types::ServerName<'static>,
         stream: IO,
+        session_id_generator: Option<T>,
         f: F,
     ) -> Connect<IO>
     where
         IO: AsyncRead + AsyncWrite + Unpin,
         F: FnOnce(&mut ClientConnection),
+        T: Fn(&[u8]) -> [u8; 32],
     {
-        let mut session = match ClientConnection::new(self.inner.clone(), domain) {
+        let mut session = match ClientConnection::new_with_session_id_generator(
+            self.inner.clone(),
+            domain,
+            session_id_generator,
+        ) {
             Ok(session) => session,
             Err(error) => {
                 return Connect(MidHandshake::Error {
